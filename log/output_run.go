@@ -21,29 +21,22 @@ import (
 	"time"
 )
 
-func startGRPCClient() {
+func startGRPCClient() error {
 	runtime.LockOSThread()
 	ctx := context.Background()
-	errMsg := ""
 	defer func() {
-		if enableDing {
-			DingAtAllWithTag("ezlog", errMsg)
-		}
-		fmt.Printf("日志爆炸了!!错误:\n\t%s\n", errMsg)
 		for {
 			<-logChannel
 		}
 	}()
 	clientConn, err := grpc.Dial(gRPCURL, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
-		errMsg = fmt.Sprintf("grpc拨号错误:%s", err.Error())
-		return
+		return fmt.Errorf("grpc拨号错误:%s", err.Error())
 	}
 	grpcClient := model.NewEzLogGrpcClient(clientConn)
 	stream, err := grpcClient.Log(ctx)
 	if err != nil {
-		errMsg = fmt.Sprintf("grpc方法调用错误:%s", err.Error())
-		return
+		return fmt.Errorf("grpc方法调用错误:%s", err.Error())
 	}
 	// It is safe to have a goroutine calling SendMsg and another goroutine
 	// calling RecvMsg on the same stream at the same time, but it is not safe
@@ -53,8 +46,7 @@ func startGRPCClient() {
 	for {
 		msg := <-logChannel
 		if err = stream.Send(msg); err != nil {
-			errMsg = fmt.Sprintf("发送失败:%s\n文件:%s\n行号:%d\n消息内容:\n%s", err.Error(), msg.FileName, msg.FileLine, msg.Content)
-			return
+			return fmt.Errorf("发送失败:%s\n文件:%s\n行号:%d\n消息内容:\n%s", err.Error(), msg.FileName, msg.FileLine, msg.Content)
 		}
 	}
 }

@@ -114,10 +114,20 @@ func SetUpEnv(m *EZLoggerModel) {
 		}
 		for i := 0; i < gRPCClientCounts; i++ {
 			go func() {
-				for {
-					startGRPCClient()
-					time.Sleep(5 * time.Second)
+				for j := 0; j < 5; j++ {
+					st := time.Now()
+					if err := startGRPCClient(); err != nil {
+						if enableDing {
+							DingAtAllWithTag("日志爆炸了", err.Error())
+						}
+						println(err.Error())
+					}
+					if time.Now().Sub(st) > 30*time.Second {
+						j = 0
+					}
+					time.Sleep(time.Duration(j) * time.Second)
 				}
+				DingAtAllWithTag("日志爆炸了", "已经重试重联日志服务器5次,把把都在30秒内GG,所以放弃了")
 			}()
 		}
 	}
