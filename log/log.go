@@ -27,7 +27,6 @@ var lvHeaderMap = map[LogLv]string{
 	LogLvDingLists:   "\n[DAL!]   ",
 	LogLvDingAll:     "\n[DAA!]   ",
 }
-var logFmtStr = "%sFile:%s%sLine:%d%s%s\n"
 
 type EZLoggerModel struct {
 	LogLevel      int32
