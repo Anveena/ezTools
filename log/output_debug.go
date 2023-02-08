@@ -6,11 +6,17 @@ import (
 	"fmt"
 	"runtime"
 	"strings"
+	"sync"
 )
 
-var debugLogFmtStr = "%sFile: %s:%d%s%s\n"
+var debugLogFmtStr = "%s %s:%d%s%s\n"
 
-func startGRPCClient() {}
+func startGRPCClient() error {
+	wg := sync.WaitGroup{}
+	wg.Add(1)
+	wg.Wait()
+	return nil
+}
 func Log(level LogLv, msg ...any) {
 	_, file, line, _ := runtime.Caller(2)
 	header := lvHeaderMap[level]
