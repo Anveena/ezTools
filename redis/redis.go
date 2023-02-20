@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/Anveena/ezTools/password"
-	"github.com/go-redis/redis/v9"
+	redis "github.com/redis/go-redis/v9"
 	"runtime"
 )
 
