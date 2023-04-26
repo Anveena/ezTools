@@ -70,28 +70,28 @@ type dingRequestModel struct {
 	} `json:"at"`
 }
 
-func SetUpEnv(m *EZLoggerModel) {
+func SetUpEnv(m *EZLoggerModel) error {
 	appName = m.AppName
 	logLevel = LogLv(m.LogLevel)
 	enableDing = m.DingTalkModel.Enable
 	if appName == "" {
-		panic(fmt.Sprintf("AppName必须要配置,不然无法区分对应的服务"))
+		return fmt.Errorf("AppName必须要配置,不然无法区分对应的服务")
 	}
 	var err error
 	if enableDing {
 		if m.DingTalkModel.URLEncodedString == "" {
-			panic(fmt.Sprintf("钉钉的那个URL没配置"))
+			return fmt.Errorf("钉钉的那个URL没配置")
 		}
 		dingURL, err = password.Decode(m.DingTalkModel.URLEncodedString)
 		if err != nil {
-			panic(fmt.Sprintf("获取密码错误:%s", err.Error()))
+			return fmt.Errorf("获取密码错误:%s", err.Error())
 		}
 		if m.DingTalkModel.SecretKeyEncodedString == "" {
-			panic(fmt.Sprintf("钉钉的那个SecretKey没配置"))
+			return fmt.Errorf("钉钉的那个SecretKey没配置")
 		}
 		dingSecretKey, err = password.Decode(m.DingTalkModel.SecretKeyEncodedString)
 		if err != nil {
-			panic(fmt.Sprintf("获取密码错误:%s", err.Error()))
+			return fmt.Errorf("获取密码错误:%s", err.Error())
 		}
 		dingSecretKeyData = []byte(dingSecretKey)
 		dingMobiles = m.DingTalkModel.Mobiles
@@ -106,21 +106,21 @@ func SetUpEnv(m *EZLoggerModel) {
 	gRPCClientCounts = m.GRPCModel.ClientCounts
 	if gRPCClientCounts > 0 {
 		if m.GRPCModel.URLEncodedString == "" {
-			panic(fmt.Sprintf("gRPC日志服务没配地址"))
+			return fmt.Errorf("gRPC日志服务没配地址")
 		}
 		gRPCURL, err = password.Decode(m.GRPCModel.URLEncodedString)
 		if err != nil {
-			panic(fmt.Sprintf("获取密码错误:%s", err.Error()))
+			return fmt.Errorf("获取密码错误:%s", err.Error())
 		}
 		for i := 0; i < gRPCClientCounts; i++ {
 			go func() {
 				for j := 0; j < 5; j++ {
 					st := time.Now()
-					if err := startGRPCClient(); err != nil {
+					if e := startGRPCClient(); e != nil {
 						if enableDing {
-							DingAtAllWithTag("日志爆炸了", err.Error())
+							DingAtAllWithTag("日志爆炸了", e.Error())
 						}
-						println(err.Error())
+						println(e.Error())
 					}
 					if time.Now().Sub(st) > 30*time.Second {
 						j = 0
@@ -131,6 +131,7 @@ func SetUpEnv(m *EZLoggerModel) {
 			}()
 		}
 	}
+	return nil
 }
 func D(msg ...any) {
 	Log(LogLvDebug, msg...)
