@@ -5,22 +5,31 @@ import (
 	"github.com/Anveena/ezTools/crypto"
 )
 
-func Encode(origPwd string) (string, error) {
-	origPwdData := []byte(origPwd)
-	encData, err := crypto.EZEncrypt(origPwdData, "this code may be not working", 9458)
+func Encode(origStr string) (string, error) {
+	return EncodeData([]byte(origStr))
+}
+func Decode(base64Str string) (string, error) {
+	rs, err := DecodeData(base64Str)
+	if err != nil {
+		return "", err
+	}
+	return string(rs), nil
+}
+func EncodeData(origData []byte) (string, error) {
+	encData, err := crypto.EZEncrypt(origData, "this code may be not working", 9458)
 	if err != nil {
 		return "", err
 	}
 	return base64.StdEncoding.EncodeToString(encData), nil
 }
-func Decode(base64Str string) (string, error) {
+func DecodeData(base64Str string) ([]byte, error) {
 	encData, err := base64.StdEncoding.DecodeString(base64Str)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 	origData, err := crypto.EZDecrypt(encData, "this code may be not working", 9458)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
-	return string(origData), nil
+	return origData, nil
 }
