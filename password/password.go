@@ -16,6 +16,9 @@ func Decode(base64Str string) (string, error) {
 	return string(rs), nil
 }
 func EncodeData(origData []byte) (string, error) {
+	if len(origData) == 0 {
+		return "", nil
+	}
 	encData, err := crypto.EZEncrypt(origData, "this code may be not working", 9458)
 	if err != nil {
 		return "", err
@@ -23,6 +26,9 @@ func EncodeData(origData []byte) (string, error) {
 	return base64.StdEncoding.EncodeToString(encData), nil
 }
 func DecodeData(base64Str string) ([]byte, error) {
+	if len(base64Str) == 0 {
+		return []byte{}, nil
+	}
 	encData, err := base64.StdEncoding.DecodeString(base64Str)
 	if err != nil {
 		return nil, err
