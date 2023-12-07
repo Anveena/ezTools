@@ -5,6 +5,13 @@ import (
 	"github.com/Anveena/ezTools/crypto"
 )
 
+func MustEncode(origStr string) string {
+	rs, err := EncodeData([]byte(origStr))
+	if err == nil {
+		return rs
+	}
+	return "加密失败了"
+}
 func Encode(origStr string) (string, error) {
 	return EncodeData([]byte(origStr))
 }
